@@ -1,0 +1,25 @@
+# Non-secret server configuration. Values are injected as environment variables.
+# HOST_SETTINGS_* and GAME_SETTINGS_* are applied to the JSON config on boot by
+# the image's start.sh (nested keys use __). See the docker-vrising README.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vrising-config
+  namespace: vrising
+data:
+  TZ: "Europe/Paris"
+  SERVERNAME: "vrising-gke"
+  WINEDEBUG: "fixme-all"
+
+  # Make the server discoverable in the in-game / Steam lists.
+  HOST_SETTINGS_ListOnSteam: "true"
+  HOST_SETTINGS_ListOnEOS: "true"
+  HOST_SETTINGS_Description: "V Rising on GKE"
+  HOST_SETTINGS_MaxConnectedUsers: "40"
+
+  # Enable RCON here; the password lives in the Secret. Also un-disable the
+  # RCON firewall rule in Terraform and expose 25575 if you want remote admin.
+  HOST_SETTINGS_Rcon__Enabled: "false"
+
+  # Example gameplay setting (uncomment to use a PvE ruleset):
+  # GAME_SETTINGS_GameModeType: "PvE"

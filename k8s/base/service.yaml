@@ -1,0 +1,22 @@
+# External passthrough Network LB (UDP). The overlay patches in loadBalancerIP
+# with the reserved static IP from Terraform so the endpoint is stable across
+# nightly node recreation.
+apiVersion: v1
+kind: Service
+metadata:
+  name: vrising
+  namespace: vrising
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local   # preserve client source IP
+  selector:
+    app: vrising
+  ports:
+    - name: game
+      port: 9876
+      targetPort: 9876
+      protocol: UDP
+    - name: query
+      port: 9877
+      targetPort: 9877
+      protocol: UDP

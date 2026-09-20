@@ -1,0 +1,17 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored.
+
+project_id  = "my-gcp-project"
+region      = "us-central1"
+zone        = "us-central1-a"
+github_repo = "your-github-username/vrising-gke"
+
+# --- Optional overrides ---
+# cluster_name        = "vrising"
+# machine_type        = "e2-standard-4"   # e2-standard-2 is cheaper for small groups
+# node_disk_size_gb   = 50
+
+# Nightly scale-down (crons evaluated in scheduler_time_zone).
+# enable_scheduled_scaling = true
+# scale_down_cron          = "0 3 * * *"   # 03:00 -> 0 nodes
+# scale_up_cron            = "0 16 * * *"  # 16:00 -> 1 node
+# scheduler_time_zone      = "Europe/Paris"

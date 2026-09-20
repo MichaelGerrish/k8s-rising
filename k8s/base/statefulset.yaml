@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vrising
+  namespace: vrising
+spec:
+  serviceName: vrising
+  replicas: 1              # single stateful server, never scale >1
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: vrising
+  template:
+    metadata:
+      labels:
+        app: vrising
+    spec:
+      # x86_64 only: it's a Windows binary under Wine and start.sh checks AVX.
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      # start.sh traps SIGTERM (K8s default stop signal) to stop the server and
+      # flush the save; give it room to finish.
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: vrising
+          image: trueosiris/vrising:latest   # overlay pins an immutable tag
+          # Replicate the docker-compose entrypoint CRLF fix, then run start.sh.
+          # (block scalar keeps the backslash literal so sed sees s/\r//g)
+          command:
+            - /bin/bash
+            - -c
+            - |
+              sed -i 's/\r//g' /start.sh && exec /bin/bash /start.sh
+          envFrom:
+            - configMapRef:
+                name: vrising-config
+            - secretRef:
+                name: vrising-secrets
+          ports:
+            - name: game
+              containerPort: 9876
+              protocol: UDP
+            - name: query
+              containerPort: 9877
+              protocol: UDP
+            # - name: rcon
+            #   containerPort: 25575
+            #   protocol: TCP
+          resources:
+            requests:
+              cpu: "2"
+              memory: 4Gi
+            limits:
+              cpu: "3500m"
+              memory: 8Gi
+          volumeMounts:
+            - name: server
+              mountPath: /mnt/vrising/server
+            - name: persistentdata
+              mountPath: /mnt/vrising/persistentdata
+          # No HTTP endpoint exists, so probes check the game process directly.
+          startupProbe:
+            exec:
+              command: ["pgrep", "-f", "VRisingServer.exe"]
+            periodSeconds: 30
+            failureThreshold: 24   # ~12 min budget for SteamCMD + Wine boot
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["pgrep", "-f", "VRisingServer.exe"]
+            periodSeconds: 30
+            failureThreshold: 4
+            timeoutSeconds: 5
+  volumeClaimTemplates:
+    - metadata:
+        name: server
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: standard-rwo   # rebuilt from Steam; Delete is fine
+        resources:
+          requests:
+            storage: 15Gi
+    - metadata:
+        name: persistentdata
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: vrising-retain # world saves; Retain on teardown
+        resources:
+          requests:
+            storage: 10Gi

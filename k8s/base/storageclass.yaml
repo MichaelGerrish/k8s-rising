@@ -1,0 +1,14 @@
+# StorageClass for the world-save volume, with Retain so a StatefulSet/PVC
+# teardown never deletes the underlying disk (the save is irreplaceable).
+# The SteamCMD "server" volume uses the built-in standard-rwo (Delete) instead,
+# since it is rebuilt from Steam on every start.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: vrising-retain
+provisioner: pd.csi.storage.gke.io
+parameters:
+  type: pd-balanced
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true

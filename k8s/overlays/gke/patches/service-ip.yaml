@@ -1,0 +1,9 @@
+# Bind the LoadBalancer to the reserved static IP.
+# Set this to the Terraform output `static_ip`.
+apiVersion: v1
+kind: Service
+metadata:
+  name: vrising
+  namespace: vrising
+spec:
+  loadBalancerIP: "REPLACE_WITH_TERRAFORM_static_ip"
