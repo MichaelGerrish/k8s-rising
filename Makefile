@@ -3,7 +3,7 @@
 
 PROJECT ?= $(shell cd terraform && terraform output -raw 2>/dev/null; true)
 CLUSTER ?= vrising
-ZONE    ?= us-central1-a
+ZONE    ?= us-west4-a
 POOL    ?= game
 NS      ?= vrising
 

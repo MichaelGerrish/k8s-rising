@@ -6,13 +6,13 @@ variable "project_id" {
 variable "region" {
   type        = string
   description = "GCP region for regional resources (subnet, static IP, scheduler)."
-  default     = "us-central1"
+  default     = "us-west4"
 }
 
 variable "zone" {
   type        = string
-  description = "GCP zone for the GKE cluster. A ZONAL cluster keeps the control plane on GKE's free tier."
-  default     = "us-central1-a"
+  description = "GCP zone for the GKE cluster. A ZONAL cluster keeps the control plane on GKE's free tier (the free-tier credit is region-agnostic). us-west4 (Las Vegas) is the closest region to Arizona; it runs ~10% higher than us-central1 on compute but cuts player latency substantially."
+  default     = "us-west4-a"
 }
 
 variable "cluster_name" {
@@ -66,6 +66,6 @@ variable "scale_up_cron" {
 
 variable "scheduler_time_zone" {
   type        = string
-  description = "IANA time zone the scale-up/down crons are evaluated in."
-  default     = "Europe/Paris"
+  description = "IANA time zone the scale-up/down crons are evaluated in. America/Phoenix (Arizona) does not observe DST, so the schedule never drifts."
+  default     = "America/Phoenix"
 }

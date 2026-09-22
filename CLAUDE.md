@@ -10,11 +10,18 @@ GCP infra, **Kustomize** manifests for the workload, **GitHub Actions** for app 
 **Cloud Scheduler** for a nightly node-pool scale-down. There is no application code to build or
 test here — the container image is consumed from upstream, not built.
 
+`docker-vrising/` is an embedded clone of the upstream image source
+(`github.com/TrueOsiris/docker-vrising`), tracked by the parent repo as a bare gitlink (not a
+configured submodule — there is no `.gitmodules`). Treat it as vendored reference, not code to
+edit or commit: the manifests here depend on how its `start.sh` behaves (traps SIGTERM to flush
+the save, checks for AVX, applies a CRLF fix), so read it to understand the workload, but changes
+belong upstream.
+
 ## Commands
 
 Everything routes through the `Makefile` (thin wrappers over `terraform`, `gcloud`, `kubectl`).
 Override defaults on the command line, e.g. `make creds PROJECT=my-proj ZONE=us-central1-a`.
-Defaults: `CLUSTER=vrising`, `ZONE=us-central1-a`, `POOL=game`, `NS=vrising`.
+Defaults: `CLUSTER=vrising`, `ZONE=us-west4-a`, `POOL=game`, `NS=vrising`.
 
 ```bash
 make tf-init / tf-plan / tf-apply / tf-destroy   # Terraform (run locally; tf-destroy keeps the world-save disk)
@@ -30,10 +37,18 @@ and `kubectl apply -k k8s/overlays/gke --dry-run=client` / `kubectl kustomize k8
 
 ## Architecture and the constraints that shaped it
 
-A push to `main` touching `k8s/**` triggers `.github/workflows/deploy.yml`, which authenticates
-to GCP **keylessly** via Workload Identity Federation (no JSON key), fetches GKE credentials, runs
-`kubectl apply -k k8s/overlays/gke`, and waits for the StatefulSet rollout. **Terraform apply is
-never automated** — it is run manually/locally; only app manifest deploys go through CI.
+The **intended** CI flow: a push to `main` touching `k8s/**` triggers `.github/workflows/deploy.yml`,
+which authenticates to GCP **keylessly** via Workload Identity Federation (no JSON key), fetches
+GKE credentials, runs `kubectl apply -k k8s/overlays/gke`, and waits for the StatefulSet rollout.
+**Terraform apply is never automated** — it is run manually/locally; only app manifest deploys go
+through CI.
+
+**Caveat: the workflow file is not committed yet.** There is currently no `.github/` directory at
+the repo root — `deploy.yml` is described here and in the README but does not exist in the tree.
+Until it is added, deploys happen only via `make deploy` locally. The Terraform WIF wiring
+(`terraform/github_oidc.tf`) that the workflow would consume *is* in place. If you are asked to
+"fix the deploy" or wire up CI, the first step is authoring this workflow, not debugging an
+existing one.
 
 **Deliberate design decisions, each load-bearing:**
 
