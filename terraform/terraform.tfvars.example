@@ -1,8 +1,8 @@
 # Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored.
 
 project_id  = "my-gcp-project"
-region      = "us-central1"
-zone        = "us-central1-a"
+region      = "us-west4"       # Las Vegas: closest region to Arizona
+zone        = "us-west4-a"     # zonal cluster -> control plane stays on the free tier
 github_repo = "your-github-username/vrising-gke"
 
 # --- Optional overrides ---
@@ -14,4 +14,4 @@ github_repo = "your-github-username/vrising-gke"
 # enable_scheduled_scaling = true
 # scale_down_cron          = "0 3 * * *"   # 03:00 -> 0 nodes
 # scale_up_cron            = "0 16 * * *"  # 16:00 -> 1 node
-# scheduler_time_zone      = "Europe/Paris"
+# scheduler_time_zone      = "America/Phoenix"  # Arizona; no DST drift

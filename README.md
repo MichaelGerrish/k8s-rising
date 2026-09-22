@@ -116,7 +116,7 @@ key) and rolls out the change.
 Further levers: 1-yr Committed Use Discount (~35% off the node), `e2-standard-2` for small
 groups, or drop the ~$18 LB with an `external-dns` + Cloud DNS hostname (see below).
 
-The **scale-down** (default 03:00→0 nodes, 16:00→1, `Europe/Paris`) is two Cloud Scheduler jobs
+The **scale-down** (default 03:00→0 nodes, 16:00→1, `America/Phoenix`) is two Cloud Scheduler jobs
 that resize the node pool. While at 0 nodes the pod is `Pending` and no compute is billed; the
 world save survives on the retained persistent disk. Tune the crons in `terraform.tfvars`.
 
